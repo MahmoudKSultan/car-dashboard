@@ -8,6 +8,7 @@ import { HiCheckCircle, HiPlusCircle, HiXCircle } from 'react-icons/hi'
 import CreateGurentee from './CreateGurentee'
 import { useState } from 'react'
 import ChangeGuranteeStatusConfirmation from './ChangeGuranteeStatusConfirmation'
+import GuaranteePdfExport from './GuaranteePdfExport'
 
 const formatDate = (isoString?: string) => {
     if (!isoString) return ''
@@ -154,282 +155,304 @@ const OrdersClientFields = (props: OrdersClientFieldsProps) => {
                     </FormItem>
                 </div>
 
-                {values?.orders?.map((order, index) => (
-                    <div
-                        className="mt-8 border p-4 rounded-md shadow-sm"
-                        key={order._id || index}
-                    >
-                        <div className="flex justify-between items-center">
-                            <h5 className="mb-4">طلب #{index + 1}</h5>
-                            <CreateGurentee
-                                dialogIsOpen={addGuaranteeDialogOpen}
-                                setIsOpen={setAddGuaranteeDialogOpen}
-                                orderId={order._id}
-                            />
-                            <Button
-                                variant="solid"
-                                size="sm"
-                                onClick={() => setAddGuaranteeDialogOpen(true)}
-                                icon={<HiPlusCircle />}
-                            >
-                                اضافة ضمان
-                            </Button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <FormItem label="موديل السيارة">
-                                <Field
-                                    name={`orders[${index}].carModel`}
-                                    component={Input}
-                                    size="sm"
-                                    disabled={readOnly}
-                                />
-                            </FormItem>
-                            <FormItem label="لون السيارة">
-                                <Field
-                                    name={`orders[${index}].carColor`}
-                                    component={Input}
-                                    disabled={readOnly}
-                                    size="sm"
-                                />
-                            </FormItem>
-                            <FormItem label="الخدمة">
-                                <Field
-                                    name={`orders[${index}].service`}
-                                    component={Input}
-                                    disabled={readOnly}
-                                    size="sm"
-                                />
-                            </FormItem>
+                {values?.orders?.map((order, index) => {
+                    console.log(order)
 
-                            {order.guarantee?.map((g, gIndex) => (
-                                <div
-                                    key={gIndex}
-                                    className="col-span-2 border rounded p-3 mt-4 bg-gray-50"
-                                >
-                                    <div className="flex justify-between items-center">
-                                        <h6 className="mb-4 text-gray-500">
-                                            ضمان #{gIndex + 1}
-                                        </h6>
-
-                                        <Button
-                                            size="sm"
-                                            variant="twoTone"
-                                            onClick={() =>
-                                                openChangeGuaranteeStatusDialog(
-                                                    order._id,
-                                                    g._id,
-                                                    g.status
-                                                )
-                                            }
-                                            color={
-                                                g.status === 'active'
-                                                    ? 'red-600'
-                                                    : 'green-600'
-                                            }
-                                            icon={
-                                                g.status === 'active' ? (
-                                                    <HiXCircle />
-                                                ) : (
-                                                    <HiCheckCircle />
-                                                )
-                                            }
-                                        >
-                                            {g.status === 'active'
-                                                ? ' اضغط لالغاء التفعيل'
-                                                : 'اضغط للتفعيل'}
-                                        </Button>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <FormItem label="منتجات الضمان">
-                                            <Field
-                                                size="sm"
-                                                name={`orders[${index}].guarantee[${gIndex}].products`}
-                                            >
-                                                {({
-                                                    field,
-                                                    form,
-                                                }: FieldProps) => (
-                                                    <Select
-                                                        size="sm"
-                                                        isMulti
-                                                        isDisabled={readOnly}
-                                                        placeholder="Select products"
-                                                        options={[
-                                                            'Thermal Coating',
-                                                            'Ceramic Layer',
-                                                            'Nano Protection',
-                                                        ].map((p) => ({
-                                                            label: p,
-                                                            value: p,
-                                                        }))}
-                                                        value={
-                                                            field.value?.map(
-                                                                (
-                                                                    val: string
-                                                                ) => ({
-                                                                    label: val,
-                                                                    value: val,
-                                                                })
-                                                            ) || []
-                                                        }
-                                                        onChange={(selected) =>
-                                                            form.setFieldValue(
-                                                                field.name,
-                                                                selected.map(
-                                                                    (
-                                                                        opt: any
-                                                                    ) =>
-                                                                        opt.value
-                                                                )
-                                                            )
-                                                        }
-                                                    />
-                                                )}
-                                            </Field>
-                                        </FormItem>
-                                        <FormItem label="نوع الضمان">
-                                            <Field
-                                                name={`orders[${index}].guarantee[${gIndex}].typeGuarantee`}
-                                                component={Input}
-                                                size="sm"
-                                                disabled={readOnly}
-                                            />
-                                        </FormItem>
-                                        <FormItem label="تاريخ البدء">
-                                            <Field
-                                                name={`orders[${index}].guarantee[${gIndex}].startDate`}
-                                            >
-                                                {({
-                                                    field,
-                                                    form,
-                                                }: FieldProps) => (
-                                                    <DatePicker
-                                                        size="sm"
-                                                        value={
-                                                            field.value
-                                                                ? new Date(
-                                                                      field.value
-                                                                  )
-                                                                : null
-                                                        }
-                                                        onChange={(
-                                                            date: Date | null
-                                                        ) => {
-                                                            if (date) {
-                                                                form.setFieldValue(
-                                                                    field.name,
-                                                                    date.toISOString()
-                                                                )
-                                                            } else {
-                                                                form.setFieldValue(
-                                                                    field.name,
-                                                                    ''
-                                                                )
-                                                            }
-                                                        }}
-                                                        disabled={readOnly}
-                                                    />
-                                                )}
-                                            </Field>
-                                        </FormItem>
-                                        <FormItem label="تاريخ الانتهاء">
-                                            <Field
-                                                size="sm"
-                                                name={`orders[${index}].guarantee[${gIndex}].endDate`}
-                                            >
-                                                {({
-                                                    field,
-                                                    form,
-                                                }: FieldProps) => (
-                                                    <DatePicker
-                                                        value={
-                                                            field.value
-                                                                ? new Date(
-                                                                      field.value
-                                                                  )
-                                                                : null
-                                                        }
-                                                        onChange={(
-                                                            date: Date | null
-                                                        ) => {
-                                                            if (date) {
-                                                                form.setFieldValue(
-                                                                    field.name,
-                                                                    date.toISOString()
-                                                                )
-                                                            } else {
-                                                                form.setFieldValue(
-                                                                    field.name,
-                                                                    ''
-                                                                )
-                                                            }
-                                                        }}
-                                                        disabled={readOnly}
-                                                    />
-                                                )}
-                                            </Field>
-                                        </FormItem>
-                                        <FormItem label="الشروط">
-                                            <Field
-                                                size="sm"
-                                                name={`orders[${index}].guarantee[${gIndex}].terms`}
-                                                component={Input}
-                                                disabled={readOnly}
-                                            />
-                                        </FormItem>
-                                        <FormItem label="المكونات المشمولة">
-                                            <Field
-                                                name={`orders[${index}].guarantee[${gIndex}].coveredComponents`}
-                                            >
-                                                {({
-                                                    field,
-                                                    form,
-                                                }: FieldProps) => (
-                                                    <Select
-                                                        size="sm"
-                                                        isMulti
-                                                        isDisabled={readOnly}
-                                                        placeholder="Select components"
-                                                        options={[
-                                                            'Windshield',
-                                                            'Side Windows',
-                                                            'Rear Window',
-                                                        ].map((c) => ({
-                                                            label: c,
-                                                            value: c,
-                                                        }))}
-                                                        value={
-                                                            field.value?.map(
-                                                                (
-                                                                    val: string
-                                                                ) => ({
-                                                                    label: val,
-                                                                    value: val,
-                                                                })
-                                                            ) || []
-                                                        }
-                                                        onChange={(selected) =>
-                                                            form.setFieldValue(
-                                                                field.name,
-                                                                selected.map(
-                                                                    (
-                                                                        opt: any
-                                                                    ) =>
-                                                                        opt.value
-                                                                )
-                                                            )
-                                                        }
-                                                    />
-                                                )}
-                                            </Field>
-                                        </FormItem>
-                                    </div>
+                    return (
+                        <div
+                            className="mt-8 border p-4 rounded-md shadow-sm"
+                            key={order._id || index}
+                        >
+                            <div className="flex justify-between items-center">
+                                <h5 className="mb-4">طلب #{index + 1}</h5>
+                                <CreateGurentee
+                                    dialogIsOpen={addGuaranteeDialogOpen}
+                                    setIsOpen={setAddGuaranteeDialogOpen}
+                                    orderId={order._id}
+                                />
+                                <div className="flex gap-2">
+                                    {order.guarantee && order.guarantee.length > 0 && (
+                                        <GuaranteePdfExport guarantees={order.guarantee} />
+                                    )}
+                                    <Button
+                                        variant="solid"
+                                        size="sm"
+                                        onClick={() =>
+                                            setAddGuaranteeDialogOpen(true)
+                                        }
+                                        icon={<HiPlusCircle />}
+                                    >
+                                        اضافة ضمان
+                                    </Button>
                                 </div>
-                            ))}
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormItem label="موديل السيارة">
+                                    <Field
+                                        name={`orders[${index}].carModel`}
+                                        component={Input}
+                                        size="sm"
+                                        disabled={readOnly}
+                                    />
+                                </FormItem>
+                                <FormItem label="لون السيارة">
+                                    <Field
+                                        name={`orders[${index}].carColor`}
+                                        component={Input}
+                                        disabled={readOnly}
+                                        size="sm"
+                                    />
+                                </FormItem>
+                                <FormItem label="الخدمة">
+                                    <Field
+                                        name={`orders[${index}].service`}
+                                        component={Input}
+                                        disabled={readOnly}
+                                        size="sm"
+                                    />
+                                </FormItem>
+                                {/* الضمانات */}
+                                {/* pdf here */}
+                                {order.guarantee?.map((g, gIndex) => (
+                                    <div
+                                        key={gIndex}
+                                        className="col-span-2 border rounded p-3 mt-4 bg-gray-50"
+                                    >
+                                        <div className="flex justify-between items-center">
+                                            <h6 className="mb-4 text-gray-500">
+                                                ضمان #{gIndex + 1}
+                                            </h6>
+
+                                            <div className="flex gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    variant="twoTone"
+                                                    onClick={() =>
+                                                        openChangeGuaranteeStatusDialog(
+                                                            order._id,
+                                                            g._id,
+                                                            g.status
+                                                        )
+                                                    }
+                                                    color={
+                                                        g.status === 'active'
+                                                            ? 'red-600'
+                                                            : 'green-600'
+                                                    }
+                                                    icon={
+                                                        g.status === 'active' ? (
+                                                            <HiXCircle />
+                                                        ) : (
+                                                            <HiCheckCircle />
+                                                        )
+                                                    }
+                                                >
+                                                    {g.status === 'active'
+                                                        ? ' اضغط لالغاء التفعيل'
+                                                        : 'اضغط للتفعيل'}
+                                                </Button>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <FormItem label="منتجات الضمان">
+                                                <Field
+                                                    size="sm"
+                                                    name={`orders[${index}].guarantee[${gIndex}].products`}
+                                                >
+                                                    {({
+                                                        field,
+                                                        form,
+                                                    }: FieldProps) => (
+                                                        <Select
+                                                            size="sm"
+                                                            isMulti
+                                                            isDisabled={
+                                                                readOnly
+                                                            }
+                                                            placeholder="Select products"
+                                                            options={[
+                                                                'Thermal Coating',
+                                                                'Ceramic Layer',
+                                                                'Nano Protection',
+                                                            ].map((p) => ({
+                                                                label: p,
+                                                                value: p,
+                                                            }))}
+                                                            value={
+                                                                field.value?.map(
+                                                                    (
+                                                                        val: string
+                                                                    ) => ({
+                                                                        label: val,
+                                                                        value: val,
+                                                                    })
+                                                                ) || []
+                                                            }
+                                                            onChange={(
+                                                                selected
+                                                            ) =>
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    selected.map(
+                                                                        (
+                                                                            opt: any
+                                                                        ) =>
+                                                                            opt.value
+                                                                    )
+                                                                )
+                                                            }
+                                                        />
+                                                    )}
+                                                </Field>
+                                            </FormItem>
+                                            <FormItem label="نوع الضمان">
+                                                <Field
+                                                    name={`orders[${index}].guarantee[${gIndex}].typeGuarantee`}
+                                                    component={Input}
+                                                    size="sm"
+                                                    disabled={readOnly}
+                                                />
+                                            </FormItem>
+                                            <FormItem label="تاريخ البدء">
+                                                <Field
+                                                    name={`orders[${index}].guarantee[${gIndex}].startDate`}
+                                                >
+                                                    {({
+                                                        field,
+                                                        form,
+                                                    }: FieldProps) => (
+                                                        <DatePicker
+                                                            size="sm"
+                                                            value={
+                                                                field.value
+                                                                    ? new Date(
+                                                                          field.value
+                                                                      )
+                                                                    : null
+                                                            }
+                                                            onChange={(
+                                                                date: Date | null
+                                                            ) => {
+                                                                if (date) {
+                                                                    form.setFieldValue(
+                                                                        field.name,
+                                                                        date.toISOString()
+                                                                    )
+                                                                } else {
+                                                                    form.setFieldValue(
+                                                                        field.name,
+                                                                        ''
+                                                                    )
+                                                                }
+                                                            }}
+                                                            disabled={readOnly}
+                                                        />
+                                                    )}
+                                                </Field>
+                                            </FormItem>
+                                            <FormItem label="تاريخ الانتهاء">
+                                                <Field
+                                                    size="sm"
+                                                    name={`orders[${index}].guarantee[${gIndex}].endDate`}
+                                                >
+                                                    {({
+                                                        field,
+                                                        form,
+                                                    }: FieldProps) => (
+                                                        <DatePicker
+                                                            value={
+                                                                field.value
+                                                                    ? new Date(
+                                                                          field.value
+                                                                      )
+                                                                    : null
+                                                            }
+                                                            onChange={(
+                                                                date: Date | null
+                                                            ) => {
+                                                                if (date) {
+                                                                    form.setFieldValue(
+                                                                        field.name,
+                                                                        date.toISOString()
+                                                                    )
+                                                                } else {
+                                                                    form.setFieldValue(
+                                                                        field.name,
+                                                                        ''
+                                                                    )
+                                                                }
+                                                            }}
+                                                            disabled={readOnly}
+                                                        />
+                                                    )}
+                                                </Field>
+                                            </FormItem>
+                                            <FormItem label="الشروط">
+                                                <Field
+                                                    size="sm"
+                                                    name={`orders[${index}].guarantee[${gIndex}].terms`}
+                                                    component={Input}
+                                                    disabled={readOnly}
+                                                />
+                                            </FormItem>
+                                            <FormItem label="المكونات المشمولة">
+                                                <Field
+                                                    name={`orders[${index}].guarantee[${gIndex}].coveredComponents`}
+                                                >
+                                                    {({
+                                                        field,
+                                                        form,
+                                                    }: FieldProps) => (
+                                                        <Select
+                                                            size="sm"
+                                                            isMulti
+                                                            isDisabled={
+                                                                readOnly
+                                                            }
+                                                            placeholder="Select components"
+                                                            options={[
+                                                                'Windshield',
+                                                                'Side Windows',
+                                                                'Rear Window',
+                                                            ].map((c) => ({
+                                                                label: c,
+                                                                value: c,
+                                                            }))}
+                                                            value={
+                                                                field.value?.map(
+                                                                    (
+                                                                        val: string
+                                                                    ) => ({
+                                                                        label: val,
+                                                                        value: val,
+                                                                    })
+                                                                ) || []
+                                                            }
+                                                            onChange={(
+                                                                selected
+                                                            ) =>
+                                                                form.setFieldValue(
+                                                                    field.name,
+                                                                    selected.map(
+                                                                        (
+                                                                            opt: any
+                                                                        ) =>
+                                                                            opt.value
+                                                                    )
+                                                                )
+                                                            }
+                                                        />
+                                                    )}
+                                                </Field>
+                                            </FormItem>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    )
+                })}
             </AdaptableCard>
             <ChangeGuranteeStatusConfirmation
                 status={changeGuaranteeStatusDialog.status}

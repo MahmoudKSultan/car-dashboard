@@ -42,6 +42,7 @@ const ClientsTable = () => {
             getClients({
                 limit,
                 offset: (pageIndex - 1) * limit,
+                search: query || undefined
             })
         )
     }, [pageIndex, limit, sort, query, dispatch])

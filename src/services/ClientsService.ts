@@ -15,6 +15,9 @@ export async function apiGetClients(params: GetClientsParams) {
     })
 }
 
+// ?search=
+// phone number or name
+
 export async function apiCreateNewClient(data: CreateClient) {
     return ApiService.fetchData({
         url: '/clients',

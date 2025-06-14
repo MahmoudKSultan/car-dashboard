@@ -1,6 +1,7 @@
 export interface GetClientsParams {
     offset: number
     limit: number
+    search?: string
 }
 
 export type Client = {
